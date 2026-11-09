@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="自动检测本机或服务器硬件，并为文本、图像、音频和视频任务推荐可部署模型。"
+    >
+    <title>MODEL//NAV · 硬件感知模型导航</title>
+    <link rel="stylesheet" href="/static/app.css">
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <canvas id="world-map" aria-hidden="true"></canvas>
+    <div class="scanline" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="MODEL NAV 首页">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>MODEL//NAV</span>
+      </a>
+      <div class="topbar-actions">
+        <span class="api-state" id="api-state">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="api-state-label">API READY</span>
+        </span>
+        <a class="docs-link" href="/docs">接口文档</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="hero-kicker">Hardware-aware model routing</p>
+          <h1 id="hero-title">让每个任务，<br>找到真正跑得动的模型</h1>
+          <p class="hero-summary">
+            输入你要完成的任务。系统会扫描当前计算机或服务器硬件，
+            拆解多模态流程，并给出可实际部署的具体模型组合。
+          </p>
+          <div class="hero-meta" aria-label="支持范围">
+            <span>TEXT</span>
+            <span>VISION</span>
+            <span>AUDIO</span>
+            <span>VIDEO</span>
+          </div>
+        </div>
+
+        <form class="task-console" id="task-form">
+          <div class="console-head">
+            <span>任务输入</span>
+            <span class="console-index">LOCAL / SERVER</span>
+          </div>
+
+          <label class="sr-only" for="task-input">描述你的模型任务</label>
+          <textarea
+            id="task-input"
+            name="task"
+            rows="6"
+            required
+            placeholder="例如：在当前服务器部署一个能理解中文视频、提取语音并生成摘要的本地系统"
+          ></textarea>
+
+          <section
+            class="task-templates"
+            id="task-templates"
+            aria-labelledby="task-templates-title"
+          >
+            <header class="template-heading">
+              <span id="task-templates-title">常用任务模板</span>
+              <small>选择后仍可继续编辑需求</small>
+            </header>
+            <div class="template-tabs" role="tablist" aria-label="任务类型">
+              <button
+                class="template-tab is-active"
+                id="template-tab-text"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                aria-controls="template-panel"
+                data-template-tab="text"
+              >文本与代码</button>
+              <button
+                class="template-tab"
+                id="template-tab-image"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="template-panel"
+                tabindex="-1"
+                data-template-tab="image"
+              >图像</button>
+              <button
+                class="template-tab"
+                id="template-tab-audio"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="template-panel"
+                tabindex="-1"
+                data-template-tab="audio"
+              >音频</button>
+              <button
+                class="template-tab"
+                id="template-tab-video"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="template-panel"
+                tabindex="-1"
+                data-template-tab="video"
+              >视频</button>
+              <button
+                class="template-tab"
+                id="template-tab-multimodal"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="template-panel"
+                tabindex="-1"
+                data-template-tab="multimodal"
+              >多模态</button>
+            </div>
+            <div
+              class="template-grid"
+              id="template-panel"
+              role="tabpanel"
+              aria-labelledby="template-tab-text"
+            >
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="text"
+                data-example="部署一个本地中文文本模型，用于长文写作、内容摘要和关键结论提取"
+              >
+                <strong>写作与摘要</strong>
+                <span>长文生成、总结和关键信息提取</span>
+              </button>
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="text"
+                data-example="部署一个本地中文知识库问答系统，需要文本向量化、检索重排序和回答生成"
+              >
+                <strong>知识库问答</strong>
+                <span>向量检索、重排序和回答生成</span>
+              </button>
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="text"
+                data-example="部署一个本地多语言翻译模型，把中文和英文内容互相翻译"
+              >
+                <strong>文本翻译</strong>
+                <span>中文、英文和多语言互译</span>
+              </button>
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="text"
+                data-example="部署一个本地代码生成模型，用于编写、解释和重构 Python 代码"
+              >
+                <strong>代码生成</strong>
+                <span>代码编写、解释和重构</span>
+              </button>
+
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="image"
+                data-example="部署一个本地图片理解模型，描述图片内容并回答相关问题"
+                hidden
+              >
+                <strong>图片内容理解</strong>
+                <span>描述画面、识别物体并回答问题</span>
+              </button>
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="image"
+                data-example="部署一个本地 OCR 模型，识别图片和扫描文档中的文字"
+                hidden
+              >
+                <strong>图片文字识别</strong>
+                <span>OCR、扫描件和文档文字提取</span>
+              </button>
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="image"
+                data-example="部署一个本地图片生成模型，根据中文描述生成一张高质量图片"
+                hidden
+              >
+                <strong>图片生成</strong>
+                <span>根据文字描述生成图片</span>
+              </button>
+
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="audio"
+                data-example="把一段录音、播客或课程音频转成文字"
+                hidden
+              >
+                <strong>语音转写</strong>
+                <span>录音、播客和课程音频转文字</span>
+              </button>
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="audio"
+                data-example="理解一段音频中的内容、声音场景和关键信息并回答问题"
+                hidden
+              >
+                <strong>音频内容理解</strong>
+                <span>分析声音内容、场景和关键信息</span>
+              </button>
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="audio"
+                data-example="把一段中文文本转成自然流畅的语音"
+                hidden
+              >
+                <strong>语音合成</strong>
+                <span>文本朗读、配音和自然语音生成</span>
+              </button>
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="audio"
+                data-example="把一段播客录音转成文字，区分说话人并生成摘要"
+                hidden
+              >
+                <strong>多说话人处理</strong>
+                <span>转写、区分说话人并生成摘要</span>
+              </button>
+
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="video"
+                data-example="理解一段视频的画面和内容，并回答相关问题"
+                hidden
+              >
+                <strong>视频内容理解</strong>
+                <span>分析画面、事件和时序信息</span>
+              </button>
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="video"
+                data-example="部署一个本地文生视频模型，根据文字描述生成一段视频"
+                hidden
+              >
+                <strong>视频生成</strong>
+                <span>根据文字或图片生成视频</span>
+              </button>
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="video"
+                data-example="把一段视频中的语音转成文字并生成字幕"
+                hidden
+              >
+                <strong>视频语音转写</strong>
+                <span>提取音轨、语音识别和字幕生成</span>
+              </button>
+
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="multimodal"
+                data-example="分析一段视频，提取音频转成文字并生成内容摘要"
+                hidden
+              >
+                <strong>视频语音摘要</strong>
+                <span>组合视频、音频、转写和摘要</span>
+              </button>
+              <button
+                class="template-card"
+                type="button"
+                data-template-category="multimodal"
+                data-example="理解一张图片，并结合我的文字问题生成详细回答"
+                hidden
+              >
+                <strong>图文联合分析</strong>
+                <span>结合图片内容和文字问题进行回答</span>
+              </button>
+            </div>
+          </section>
+
+          <fieldset class="quality-control">
+            <legend>推荐偏好</legend>
+            <label>
+              <input type="radio" name="quality" value="speed">
+              <span>速度优先</span>
+            </label>
+            <label>
+              <input type="radio" name="quality" value="balanced" checked>
+              <span>均衡</span>
+            </label>
+            <label>
+              <input type="radio" name="quality" value="quality">
+              <span>质量优先</span>
+            </label>
+          </fieldset>
+
+          <div class="advanced-controls">
+            <label class="target-environment">
+              <span>目标环境</span>
+              <select id="target-environment" name="target-environment">
+                <option value="current" selected>当前电脑（自动检测）</option>
+                <option value="workstation-16">16GB 显存工作站</option>
+                <option value="server-24">24GB 显存服务器</option>
+                <option value="server-2x48">2×48GB 多 GPU 服务器</option>
+              </select>
+            </label>
+            <div class="engine-switches">
+              <label>
+                <input id="allow-offload" type="checkbox" checked>
+                <span>允许 CPU Offload</span>
+              </label>
+              <label>
+                <input id="use-llmfit" type="checkbox" checked>
+                <span>启用 llmfit 文本候选</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="console-foot">
+            <label class="candidate-count">
+              <span>每阶段候选</span>
+              <select id="candidate-count" name="candidate-count">
+                <option value="2">2 个</option>
+                <option value="3" selected>3 个</option>
+                <option value="4">4 个</option>
+                <option value="5">5 个</option>
+                <option value="10">10 个</option>
+              </select>
+            </label>
+            <button class="submit-button" id="submit-button" type="submit">
+              <span class="submit-idle">扫描硬件并推荐</span>
+              <span class="submit-loading">正在分析环境</span>
+            </button>
+          </div>
+
+          <p class="form-message" id="form-message" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <section class="results" id="results" aria-labelledby="results-title" hidden>
+        <header class="results-heading">
+          <div>
+            <p class="section-kicker">Agent response</p>
+            <h2 id="results-title">部署建议已生成</h2>
+          </div>
+          <button class="reset-button" id="reset-button" type="button">修改需求</button>
+        </header>
+
+        <div class="answer-layout">
+          <article class="agent-answer">
+            <div class="panel-label">综合答复</div>
+            <p id="agent-summary"></p>
+          </article>
+          <aside class="hardware-panel" aria-labelledby="hardware-title">
+            <div class="panel-label" id="hardware-title">检测到的环境</div>
+            <dl id="hardware-list"></dl>
+          </aside>
+        </div>
+
+        <section class="pipeline-panel" aria-labelledby="pipeline-title">
+          <div class="section-line">
+            <h3 id="pipeline-title">任务流水线</h3>
+            <span id="pipeline-count"></span>
+          </div>
+          <ol class="pipeline-list" id="pipeline-list"></ol>
+        </section>
+
+        <section class="recommendation-panel" aria-labelledby="recommendation-title">
+          <div class="section-line">
+            <h3 id="recommendation-title">模型候选对比</h3>
+            <span>按当前硬件适配度排序</span>
+          </div>
+          <div id="recommendation-list"></div>
+        </section>
+
+        <section class="deployment-panel" aria-labelledby="deployment-title">
+          <div class="section-line">
+            <h3 id="deployment-title">部署路线</h3>
+            <span>从验证到上线</span>
+          </div>
+          <div class="deployment-grid">
+            <div>
+              <div class="panel-label">执行步骤</div>
+              <ol id="deployment-steps"></ol>
+            </div>
+            <div>
+              <div class="panel-label">注意事项</div>
+              <ul id="deployment-warnings"></ul>
+            </div>
+          </div>
+          <div class="command-list" id="command-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>模型推理不会在此页面中启动，当前阶段仅生成部署方案。</span>
+      <code>POST /api/v1/model-selector/recommend</code>
+    </footer>
+
+    <template id="definition-template">
+      <div class="definition-item">
+        <dt></dt>
+        <dd></dd>
+      </div>
+    </template>
+
+    <template id="pipeline-template">
+      <li>
+        <span class="pipeline-number"></span>
+        <div>
+          <strong></strong>
+          <span class="pipeline-detail"></span>
+        </div>
+      </li>
+    </template>
+
+    <template id="stage-template">
+      <article class="stage-block">
+        <header class="stage-heading">
+          <div>
+            <span class="stage-capability"></span>
+            <h4></h4>
+          </div>
+          <p></p>
+        </header>
+        <div class="candidate-grid"></div>
+      </article>
+    </template>
+
+    <template id="candidate-template">
+      <article class="candidate-card">
+        <header>
+          <div class="candidate-rank-block">
+            <span class="candidate-rank"></span>
+            <strong class="candidate-score">
+              <span class="candidate-score-value"></span>
+              <small>/100</small>
+            </strong>
+          </div>
+          <span class="fit-badge"></span>
+        </header>
+        <h5></h5>
+        <p class="candidate-id"></p>
+        <div class="candidate-origin">
+          <span class="candidate-source"></span>
+          <span class="candidate-mode"></span>
+          <span class="candidate-confidence"></span>
+          <span class="candidate-preference"></span>
+        </div>
+        <p class="candidate-utilization"></p>
+        <div class="score-breakdown"></div>
+        <dl class="candidate-specs"></dl>
+        <div class="candidate-copy">
+          <strong>排名依据</strong>
+          <ul class="ranking-reason-list"></ul>
+          <strong>为什么适合</strong>
+          <ul class="reason-list"></ul>
+          <strong>取舍</strong>
+          <ul class="tradeoff-list"></ul>
+        </div>
+      </article>
+    </template>
+
+    <template id="score-row-template">
+      <div class="score-row">
+        <div class="score-row-label">
+          <span></span>
+          <strong></strong>
+        </div>
+        <div class="score-track" aria-hidden="true">
+          <span class="score-fill"></span>
+        </div>
+      </div>
+    </template>
+  </body>
+</html>
